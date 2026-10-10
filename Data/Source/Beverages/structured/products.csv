@@ -1,0 +1,6 @@
+product_id,sku,product_name,category,brand,package_size_ml,package_type,status
+BEV-001,BVG-AJ-330,Organic Apple Juice,juice,Orchard Valley,330,glass_bottle,active
+BEV-002,BVG-LM-330,Sparkling Lemon Drink,soft_drink,Citrus Wave,330,aluminum_can,active
+BEV-003,BVG-OL-250,Oat Milk Latte,ready_to_drink_coffee,Nordic Brew,250,aluminum_can,active
+BEV-004,BVG-WT-500,Natural Mineral Water,water,Clear Spring,500,pet_bottle,active
+BEV-005,BVG-IT-500,Peach Iced Tea,iced_tea,Leaf & Peach,500,pet_bottle,active

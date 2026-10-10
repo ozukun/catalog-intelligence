@@ -1,0 +1,8 @@
+supplier_id,product_id,supplier_sku,lead_time_days,minimum_order_quantity_cases,is_preferred_supplier
+SUP-001,BEV-001,NV-APPLE-330,5,50,true
+SUP-001,BEV-004,NV-WATER-500,4,100,true
+SUP-002,BEV-001,RB-AJ-330,9,80,false
+SUP-002,BEV-002,RB-LEMON-330,7,60,true
+SUP-002,BEV-005,RB-PEACH-500,8,50,false
+SUP-003,BEV-003,BD-OATLATTE-250,12,40,true
+SUP-003,BEV-005,BD-PEACH-500,6,70,true

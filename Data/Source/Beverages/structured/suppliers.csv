@@ -1,0 +1,4 @@
+supplier_id,supplier_name,country_code,city,contact_email,status
+SUP-001,North Valley Beverages B.V.,NL,Utrecht,sales@northvalley.example,active
+SUP-002,Rhein Beverage Trading GmbH,DE,Dusseldorf,orders@rheinbeverage.example,active
+SUP-003,Baltic Drinks Distribution Sp. z o.o.,PL,Gdansk,sales@balticdrinks.example,active

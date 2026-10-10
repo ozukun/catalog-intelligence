@@ -4,3 +4,4 @@ __pycache__/
 chroma_db/
 z_agents_dummy/
 z_code_dummy_checks/
+z_dummy/
