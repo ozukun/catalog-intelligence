@@ -1,0 +1,80 @@
+{
+  "schema_version": "1.0",
+  "domain": "beverages",
+  "entity": "product",
+  "document_types": [
+    "supplier_product_catalog"
+  ],
+  "attributes": {
+    "product_name": {
+      "type": "string",
+      "required": true,
+      "description": "Commercial name of the beverage product",
+      "semantic_terms": [
+        "product name",
+        "item name",
+        "product title"
+      ]
+    },
+    "brand": {
+      "type": "string",
+      "required": false,
+      "description": "Brand under which the product is sold",
+      "semantic_terms": [
+        "brand",
+        "brand name",
+        "trademark"
+      ]
+    },
+    "supplier_sku": {
+      "type": "string",
+      "required": false,
+      "description": "Supplier-specific product identifier",
+      "semantic_terms": [
+        "supplier code",
+        "item code",
+        "article number",
+        "SKU"
+      ]
+    },
+    "package_size_ml": {
+      "type": "integer",
+      "required": false,
+      "description": "Net volume of one individual beverage unit",
+      "semantic_terms": [
+        "net content",
+        "volume",
+        "bottle size",
+        "can size"
+      ],
+      "normalization": {
+        "target_unit": "ml",
+        "accepted_units": ["ml", "cl", "L"]
+      }
+    },
+    "package_type": {
+      "type": "string",
+      "required": false,
+      "description": "Primary packaging of the beverage",
+      "semantic_terms": [
+        "bottle",
+        "can",
+        "carton",
+        "packaging"
+      ],
+      "allowed_values": [
+        "glass_bottle",
+        "pet_bottle",
+        "aluminum_can",
+        "carton",
+        "other"
+      ]
+    }
+  },
+  "extraction_rules": {
+    "multiple_products_per_document": true,
+    "invent_missing_values": false,
+    "missing_value": null,
+    "source_evidence_required": true
+  }
+}
