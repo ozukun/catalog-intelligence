@@ -5,7 +5,7 @@ from pathlib import Path
 from services.PageDetector import PageDetector
 from services.TextExtractor import TextExtractor
 from services.EmbeddingService import EmbeddingService
-
+from services.TokenChunker import TokenChunker
 
 class Orchestrator:
 
@@ -14,6 +14,11 @@ class Orchestrator:
         self.detector = PageDetector()
         self.text_extractor = TextExtractor()
         self.embedding_service = EmbeddingService()
+        self.chunker = TokenChunker(
+        tokenizer=self.embedding_service.model.tokenizer,
+        max_tokens=200,
+        overlap=30
+        )
 
     def process(self, pdflocation):
 
@@ -36,16 +41,21 @@ class Orchestrator:
                         if not text:
                             continue
 
-                        # Step 3: Generate embedding
-                        embedding = self.embedding_service.embed(text)
+                        # Split page into token-based chunks
+                        for chunk in self.chunker.split(text):
 
-                        yield {
-                            "document": pdffile.name,
-                            "page": page_number,
-                            "content_type": page_type,
-                            "text": text,
-                            "embedding": embedding
-                        }
+                            embedding = self.embedding_service.embed(
+                                chunk["text"]
+                            )
+
+                            yield {
+                                "document": pdffile.name,
+                                "page": page_number,
+                                "chunk": chunk["chunk_number"],
+                                "token_count": chunk["token_count"],
+                                "text": chunk["text"],
+                                "embedding": embedding
+                            }
 
 
 if __name__ == "__main__":
