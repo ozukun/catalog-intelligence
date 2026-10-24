@@ -10,17 +10,24 @@
       "type": "string",
       "required": true,
       "description": "Commercial name of the beverage product",
-      "semantic_terms": [
+      "semantic_terms": 
+      [
         "product name",
         "item name",
-        "product title"
+        "product title",
+        "commercial name",
+        "article name",
+        "product description",
+        "item description",
+        "article description"
       ]
     },
     "brand": {
       "type": "string",
       "required": false,
       "description": "Brand under which the product is sold",
-      "semantic_terms": [
+      "semantic_terms": 
+      [
         "brand",
         "brand name",
         "trademark"

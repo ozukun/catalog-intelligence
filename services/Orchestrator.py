@@ -42,7 +42,7 @@ class Orchestrator:
                             continue
 
                         # Split page into token-based chunks
-                        for chunk in self.chunker.split(text):
+                        for chunk_number, chunk in enumerate(self.chunker.split(text), start=1):
 
                             embedding = self.embedding_service.embed(
                                 chunk["text"]
@@ -51,7 +51,7 @@ class Orchestrator:
                             yield {
                                 "document": pdffile.name,
                                 "page": page_number,
-                                "chunk": chunk["chunk_number"],
+                                "chunk": chunk_number,
                                 "token_count": chunk["token_count"],
                                 "text": chunk["text"],
                                 "embedding": embedding
