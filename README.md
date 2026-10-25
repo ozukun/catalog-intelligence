@@ -1,2 +1,2 @@
-# context-agent
-AI-powered context intelligence platform that turns unstructured content into structured, searchable, and agent-ready knowledge.
+# catalog-intelligence
+AI-powered financial intelligence platform for semantic asset discovery, contextual analysis, and intelligent financial data retrieval.git
