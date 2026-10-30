@@ -1,7 +1,7 @@
 
 class TokenChunker:
 
-    def __init__(self, tokenizer, max_tokens=200, overlap=30):
+    def __init__(self, tokenizer, max_tokens=50, overlap=30):
 
         self.tokenizer = tokenizer
         self.max_tokens = max_tokens
