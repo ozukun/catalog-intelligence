@@ -1,61 +1,104 @@
 
-import pymupdf
 from pathlib import Path
+import pymupdf
 
 from services.PageDetector import PageDetector
 from services.TextExtractor import TextExtractor
-from services.EmbeddingService import EmbeddingService
-from services.TokenChunker import TokenChunker
+from services.PageClassificationService import PageClassificationService
+
 
 class Orchestrator:
 
     def __init__(self):
-
         self.detector = PageDetector()
         self.text_extractor = TextExtractor()
-        self.embedding_service = EmbeddingService()
-        self.chunker = TokenChunker(
-        tokenizer=self.embedding_service.model.tokenizer,
-        max_tokens=200,
-        overlap=30
-        )
+        self.classifier = PageClassificationService()
 
     def process(self, pdflocation):
 
         folder = Path(pdflocation)
 
-        for pdffile in folder.glob("*.pdf"):
+        for pdffile in sorted(folder.glob("*.pdf")):
+
+            pages = []
+            text_pages = []
 
             with pymupdf.open(pdffile) as pdf:
 
                 for page_number, page in enumerate(pdf, start=1):
 
-                    # Step 1: Detect page type
                     page_type = self.detector.detect(page)
+                    text = ""
 
-                    # Step 2: Process TEXT pages
-                    if page_type == "TEXT":
-
+                    if page_type in ("TEXT", "MIXED"):
                         text = self.text_extractor.extract(page)
 
-                        if not text:
-                            continue
+                    page_data = {
+                        "document": pdffile.name,
+                        "pdf_path": str(pdffile.resolve()),
+                        "page": page_number,
+                        "content_type": page_type,
+                        "text": text
+                    }
 
-                        # Split page into token-based chunks
-                        for chunk_number, chunk in enumerate(self.chunker.split(text), start=1):
+                    pages.append(page_data)
 
-                            embedding = self.embedding_service.embed(
-                                chunk["text"]
-                            )
+                    # Only TEXT pages go to the mini model
+                    if page_type == "TEXT":
+                        text_pages.append({
+                            "page": page_number,
+                            "content_type": "TEXT",
+                            "text": text
+                        })
 
-                            yield {
-                                "document": pdffile.name,
-                                "page": page_number,
-                                "chunk": chunk_number,
-                                "token_count": chunk["token_count"],
-                                "text": chunk["text"],
-                                "embedding": embedding
-                            }
+            # Mini classification: one call per PDF
+            page_flags = {}
+
+            if text_pages:
+
+                decisions = self.classifier.classify(
+                    pdffile.name,
+                    text_pages
+                )
+
+                for decision in decisions:
+                    page_flags[decision["page"]] = decision["flag"]
+
+            # Decide the final route for every page
+            for page_data in pages:
+
+                page_type = page_data["content_type"]
+
+                if page_type in ("IMAGE", "MIXED"):
+
+                    flag = "KEEP"
+                    route = "LARGE_MODEL"
+
+                elif page_type == "TEXT":
+
+                    flag = page_flags.get(
+                        page_data["page"],
+                        "REVIEW"
+                    )
+
+                    if flag not in ("KEEP", "REVIEW", "DROP"):
+                        flag = "REVIEW"
+
+                    if flag == "DROP":
+                        route = "SKIP"
+                    else:
+                        route = "LARGE_MODEL"
+
+                else:
+
+                    flag = "DROP"
+                    route = "SKIP"
+
+                yield {
+                    **page_data,
+                    "flag": flag,
+                    "route": route
+                }
 
 
 if __name__ == "__main__":
@@ -66,6 +109,10 @@ if __name__ == "__main__":
 
     for result in orchestrator.process(path):
 
-        print("Document:", result["document"])
-        print("Page:", result["page"])
-        print("Embedding:", result["embedding"].shape)
+        print(
+            result["document"],
+            "page", result["page"],
+            result["content_type"],
+            "->", result["flag"],
+            "->", result["route"]
+        )
