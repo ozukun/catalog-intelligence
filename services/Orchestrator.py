@@ -1,19 +1,25 @@
 
-from pathlib import Path
+import json
 import pymupdf
+from pathlib import Path
 
 from services.PageDetector import PageDetector
 from services.TextExtractor import TextExtractor
 from services.PageClassificationService import PageClassificationService
+from services.StructuredExtractionService import StructuredExtractionService
 
 
 class Orchestrator:
 
     def __init__(self):
+
         self.detector = PageDetector()
         self.text_extractor = TextExtractor()
         self.classifier = PageClassificationService()
+        self.extractor = StructuredExtractionService()
 
+
+    # STEP 1: PDF Reading + Page Classification + Routing
     def process(self, pdflocation):
 
         folder = Path(pdflocation)
@@ -43,15 +49,16 @@ class Orchestrator:
 
                     pages.append(page_data)
 
-                    # Only TEXT pages go to the mini model
+                    # Only TEXT pages go to mini model
                     if page_type == "TEXT":
+
                         text_pages.append({
                             "page": page_number,
-                            "content_type": "TEXT",
+                            "content_type": page_type,
                             "text": text
                         })
 
-            # Mini classification: one call per PDF
+            # Mini model classification
             page_flags = {}
 
             if text_pages:
@@ -64,7 +71,7 @@ class Orchestrator:
                 for decision in decisions:
                     page_flags[decision["page"]] = decision["flag"]
 
-            # Decide the final route for every page
+            # Routing decisions
             for page_data in pages:
 
                 page_type = page_data["content_type"]
@@ -101,18 +108,48 @@ class Orchestrator:
                 }
 
 
+    # STEP 2: Large Model Structured Extraction
+    def run(self, pdflocation):
+
+        current_pdf = None
+        document_pages = []
+
+        for page in self.process(pdflocation):
+
+            pdf_path = page["pdf_path"]
+
+            # Previous PDF finished
+            if current_pdf is not None and pdf_path != current_pdf:
+
+                result = self.extractor.extract_text(document_pages)
+
+                if result is not None:
+                    yield result
+
+                document_pages = []
+
+            current_pdf = pdf_path
+            document_pages.append(page)
+
+        # Process the last PDF
+        if document_pages:
+
+            result = self.extractor.extract_text(document_pages)
+
+            if result is not None:
+                yield result
+
+
 if __name__ == "__main__":
 
     orchestrator = Orchestrator()
 
     path = "Data/Source/Beverages/unstructured/SUP-003/"
 
-    for result in orchestrator.process(path):
+    for result in orchestrator.run(path):
 
-        print(
-            result["document"],
-            "page", result["page"],
-            result["content_type"],
-            "->", result["flag"],
-            "->", result["route"]
-        )
+        print(json.dumps(
+            result,
+            indent=4,
+            ensure_ascii=False
+        ))
