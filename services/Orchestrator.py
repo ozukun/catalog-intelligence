@@ -6,7 +6,7 @@ from pathlib import Path
 from services.PageDetector import PageDetector
 from services.TextExtractor import TextExtractor
 from services.PageClassificationService import PageClassificationService
-from services.StructuredExtractionService import StructuredExtractionService
+from services.TextExtractionService import TextExtractionService
 
 
 class Orchestrator:
@@ -16,7 +16,7 @@ class Orchestrator:
         self.detector = PageDetector()
         self.text_extractor = TextExtractor()
         self.classifier = PageClassificationService()
-        self.extractor = StructuredExtractionService()
+        self.extractor = TextExtractionService()
 
 
     # STEP 1: PDF Reading + Page Classification + Routing

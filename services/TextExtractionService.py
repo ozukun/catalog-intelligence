@@ -2,31 +2,14 @@
 import json
 import os
 from pathlib import Path
-from typing import Literal
 
 from dotenv import load_dotenv
 from openai import OpenAI
-from pydantic import BaseModel
+
+from services.StructuredExtractionModels import ExtractionResult
 
 
-class Product(BaseModel):
-    product_name: str
-    brand: str | None
-    supplier_sku: str | None
-    package_size_ml: int | None
-    package_type: Literal[
-        "glass_bottle", "pet_bottle",
-        "aluminum_can", "carton", "other"
-    ] | None
-    source_page: int
-    source_evidence: str
-
-
-class ExtractionResult(BaseModel):
-    products: list[Product]
-
-
-class StructuredExtractionService:
+class TextExtractionService:
 
     def __init__(self):
         load_dotenv()
@@ -41,7 +24,6 @@ class StructuredExtractionService:
 
     def extract_text(self, pages: list[dict]) -> dict | None:
 
-        # Sadece seçilmiş TEXT sayfalarını al
         selected = []
 
         for page in pages:
@@ -54,7 +36,6 @@ class StructuredExtractionService:
         if not selected:
             return None
 
-        # Sayfa metinlerini birleştir
         page_text = ""
 
         for page in selected:
@@ -63,7 +44,6 @@ class StructuredExtractionService:
                 f"{page['text']}\n"
             )
 
-        # Extraction schema alanlarını hazırla
         field_lines = []
 
         for name, definition in self.schema["attributes"].items():
@@ -86,7 +66,6 @@ class StructuredExtractionService:
             "\n".join(field_lines)
         )
 
-        # Büyük model çağrısı
         response = self.client.responses.parse(
             model=self.model,
             input=[
@@ -115,9 +94,3 @@ class StructuredExtractionService:
                 "total_tokens": usage.total_tokens if usage else None
             }
         }
-
-    def extract_mixed(self, pages: list[dict]):
-        raise NotImplementedError("MIXED extraction not implemented yet")
-
-    def extract_image(self, pages: list[dict]):
-        raise NotImplementedError("IMAGE extraction not implemented yet")
